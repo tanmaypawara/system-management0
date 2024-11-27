@@ -7,31 +7,6 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
 class BillingSystem:
-    def __init__(self, root):
-        self.root = root
-        self.root.title("Billing System")
-        self.root.geometry("800x700")
-
-        self.billNumber = tk.StringVar(value=f"BN-{random.randint(1000,10000)}")
-        self.date = tk.StringVar(value=datetime.now().strftime('%d-%m-%Y'))
-        self.time = tk.StringVar(value=datetime.now().strftime('%H:%M'))
-        self.selectedItem = tk.StringVar()
-        self.quantity = tk.IntVar(value=1)
-        self.price = tk.DoubleVar(value=0.0)
-        self.totalBill = tk.DoubleVar(value=0.0)
-        self.paymentType = tk.StringVar()
-
-        self.orderItem = []
-
-        self.menu = {
-            "Water bottle": 20, "Chai": 20, "Coffee": 25,
-            "Roti": 20, "Chapati": 10, "Nan": 30, "Butter Nan": 35,
-            "Panner Masala": 150, "Paalak Paneer": 160, "Maharaja Paneer": 200,
-            "Fish Masala": 210, "Chicken Handi": 300, "Butter Chicken": 350
-        }
-
-        self.createWidget()
-        self.createDatabase()
 
     def createDatabase(self):
         """ Create SQLite database for storing orders """
@@ -93,27 +68,7 @@ class BillingSystem:
         add = tk.Button(buttonFrame, text="Add Item", bg="light green", borderwidth=0, fg="white", command=self.addOrder).pack(side="left", padx=5)
         delete = tk.Button(buttonFrame, text="Delete Item", bg="#FF4040", borderwidth=0, fg="white", command=self.deleteOrder).pack(side="left", padx=5)
 
-        self.orderList = ttk.Treeview(self.root, columns=("items", "quantity", "price"), show="headings", height=10)
-        self.orderList.heading("items", text="ITEMS")
-        self.orderList.heading("quantity", text="QUANTITY")
-        self.orderList.heading("price", text="PRICE")
-        self.orderList.pack(pady=10)
-
-        totalFrame = tk.Frame(self.root)
-        totalFrame.pack(pady=5)
-
-        totalCost = tk.Label(totalFrame, text="Total:", font="Arial 12")
-        totalCost.grid(row=0, column=0, sticky='w', padx=5)
-        tk.Entry(totalFrame, textvariable=self.totalBill, state="readonly").grid(row=0, column=1, sticky="w", padx=5)
-        payment = tk.Label(totalFrame, text="Payment Type:")
-        payment.grid(row=0, column=2, sticky="w", padx=5)
-        ttk.Combobox(totalFrame, textvariable=self.paymentType, values=["Card", "Cash", "UPI"], state="readonly").grid(row=0, column=3)
-
-        orderButton = tk.Button(self.root, text="Order Now!", font="Arial 12", bg="green", fg="White", borderwidth=0, command=self.orderNow)
-        orderButton.pack(pady=5)
-
-        graphButton = tk.Button(self.root, text="View Sales Graph", font="Arial 12", bg="#FF34B3", fg="white", borderwidth=0, command=self.viewSalesGraph)
-        graphButton.pack(pady=5)
+        
 
     def updatePrice(self, event=None):
         item = self.selectedItem.get()
@@ -145,26 +100,6 @@ class BillingSystem:
     def calculateTotal(self):
         total = sum(item[2] for item in self.orderItem)
         self.totalBill.set(total)
-
-    def orderNow(self):
-        if self.paymentType.get():
-            # Insert order into database
-            bill_number = self.billNumber.get()
-            date = self.date.get()
-            time = self.time.get()
-            payment_type = self.paymentType.get()
-
-            for item, quantity, price in self.orderItem:
-                self.cursor.execute('''
-                    INSERT INTO orders (bill_number, item, quantity, price, date, time, payment_type)
-                    VALUES (?, ?, ?, ?, ?, ?, ?)
-                ''', (bill_number, item, quantity, price, date, time, payment_type))
-            
-            self.conn.commit()
-
-            messagebox.showinfo("Order Placed", f"Thank you!, keep visiting \nTotal : {self.totalBill.get()}")
-        else:
-            messagebox.showerror("Error", "Please select the payment type!")
 
     def viewSalesGraph(self):
         """ Generate a bar chart to show sales data (quantity sold) from the database """
