@@ -101,6 +101,26 @@ class BillingSystem:
         total = sum(item[2] for item in self.orderItem)
         self.totalBill.set(total)
 
+    def orderNow(self):
+        if self.paymentType.get():
+            # Insert order into database
+            bill_number = self.billNumber.get()
+            date = self.date.get()
+            time = self.time.get()
+            payment_type = self.paymentType.get()
+
+            for item, quantity, price in self.orderItem:
+                self.cursor.execute('''
+                    INSERT INTO orders (bill_number, item, quantity, price, date, time, payment_type)
+                    VALUES (?, ?, ?, ?, ?, ?, ?)
+                ''', (bill_number, item, quantity, price, date, time, payment_type))
+            
+            self.conn.commit()
+
+            messagebox.showinfo("Order Placed", f"Thank you!, keep visiting \nTotal : {self.totalBill.get()}")
+        else:
+            messagebox.showerror("Error", "Please select the payment type!")
+    
     def viewSalesGraph(self):
         """ Generate a bar chart to show sales data (quantity sold) from the database """
         # Create a new Toplevel window for the graph
